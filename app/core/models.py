@@ -1,7 +1,7 @@
 """
 Database models.
 """
-
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -9,7 +9,16 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 
+#Định nghĩa schema database
+#Quản lý relatiionships giữa các models
+#Cung cấp methods tạo/sửa/xóa records
+#Validation data
+#Custom model managers
+#Tích hợp bussiness logic
 
+
+
+#BaseUss
 class UserManager(BaseUserManager):
     """Manager for users."""
 
@@ -41,3 +50,23 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
     USERNAME_FIELD = 'email'
+
+
+class Recipe(models.Model):
+    "Recipe object."
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    ) #Foreignkey Tạo mối quan hệ 1 nhiều (1 user có nhiều công thức)
+    #Settings.AUTH_USER_MODEL giúp liên kết với user đang sử dụng
+    #Khi user bị xóa thì tất cả các recipe bị xóa theo  
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True) #blank = true là khôt bắt buộc phải nhập
+    time_minutes = models.IntegerField()
+    price = models.DecimalField(max_digits=5, decimal_places=2) #có tổng 5 số, có 2 số sau dấu chấm động
+    link = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.title
+    
+    #Khi mình in hoặc hiển thị đối tượng thì nó chỉ trả về tên title của đối tượng thôi
