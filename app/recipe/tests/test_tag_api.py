@@ -8,7 +8,7 @@ from django.test import TestCase
 
 
 from rest_framework import status
-from rest_framwork.test import APIClient
+from rest_framework.test import APIClient
 
 from core.models import Tag 
 from recipe.serializers import TagSerializer
