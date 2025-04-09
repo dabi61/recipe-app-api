@@ -52,4 +52,4 @@ class UserAdmin(BaseUserAdmin):
 #Đăng ký model với panel của admin
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Recipe)
-
+admin.site.register(models.Tag)

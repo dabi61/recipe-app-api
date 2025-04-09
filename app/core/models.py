@@ -65,8 +65,20 @@ class Recipe(models.Model):
     time_minutes = models.IntegerField()
     price = models.DecimalField(max_digits=5, decimal_places=2) #có tổng 5 số, có 2 số sau dấu chấm động
     link = models.CharField(max_length=255, blank=True)
-
+    tags = models.ManyToManyField('Tag') #Một công thức có thể có rất nhiều tag
     def __str__(self):
         return self.title
     
     #Khi mình in hoặc hiển thị đối tượng thì nó chỉ trả về tên title của đối tượng thôi
+
+#Gắn tag cho công thức
+class Tag(models.Model):
+    """Tag for filtering recipes."""
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        return self.name
