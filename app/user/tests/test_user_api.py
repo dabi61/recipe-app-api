@@ -10,16 +10,18 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 CREATE_USER_URL = reverse('user:create')
-CREATE_TOKEN_URL = reverse('user:token')    
-ME_URL = reverse('user:me')    
+CREATE_TOKEN_URL = reverse('user:token')
+ME_URL = reverse('user:me')
+
 
 def create_user(**params):
     """Create and return a new user."""
     return get_user_model().objects.create_user(**params)
 
+
 class PublicUserApiTests(TestCase):
     """Test the users API (public)."""
-    
+
     def setUp(self):
         self.client = APIClient()
 
@@ -63,7 +65,7 @@ class PublicUserApiTests(TestCase):
             email=payload['email']
         ).exists()
         self.assertFalse(user_exists)
-        
+
     def test_create_token_for_user(self):
         """Test generates token for valid credentials."""
         user_details = {
@@ -77,7 +79,7 @@ class PublicUserApiTests(TestCase):
             'email': user_details['email'],
             'password': user_details['password'],
         }
-        
+
         res = self.client.post(CREATE_TOKEN_URL, payload)
 
         self.assertIn('token', res.data)
@@ -91,7 +93,9 @@ class PublicUserApiTests(TestCase):
         res = self.client.post(CREATE_TOKEN_URL, payload)
 
         self.assertNotIn('token', res.data)
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)  # Sửa từ 401 thành 400
+        self.assertEqual(
+            res.status_code,
+            status.HTTP_400_BAD_REQUEST)  # Sửa từ 401 thành 400
 
     def test_create_token_blank_password(self):
         """Test returns error if password is blank."""
@@ -106,6 +110,7 @@ class PublicUserApiTests(TestCase):
         res = self.client.get(ME_URL)
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
 
 class PrivateUserApiTests(TestCase):
     """Test API requests that require authentication."""
