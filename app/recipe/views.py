@@ -44,7 +44,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             '-id')  # Lọc các recipe chỉ thuộc về người dùng hiện tại
 
     def get_serializer_class(self):
-    """Return the serializer class for request."""
+        """Return the serializer class for request."""
     if self.action == 'list':
         return serializers.RecipeSerializer
     elif self.action == 'retrieve':
