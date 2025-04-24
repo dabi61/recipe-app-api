@@ -48,10 +48,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return serializers.RecipeSerializer
         elif self.action == 'retrieve':
-            return serializers.RecipeDetailSerializer  # ✅ show chi tiết thì dùng detail
+            return serializers.RecipeDetailSerializer
         elif self.action == 'upload_image':
             return serializers.RecipeImageSerializer
         return self.serializer_class
+
 
     def perform_create(self, serializer):
         """Create a new recipe"""
