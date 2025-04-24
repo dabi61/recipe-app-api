@@ -1,9 +1,5 @@
-from django.contrib.auth import (
-    get_user_model,
-    authenticate
-)
+from django.contrib.auth import get_user_model, authenticate
 from django.utils.translation import gettext as _
-
 from rest_framework import serializers
 
 
@@ -21,9 +17,9 @@ class UserSerializer(serializers.ModelSerializer):
         """Kiểm tra email đã tồn tại hay chưa và đúng định dạng."""
         if get_user_model().objects.filter(email=value).exists():
             raise serializers.ValidationError("Email này đã được sử dụng.")
-        if "@" not in value or "." not in value:
+        if '@' not in value or '.' not in value:
             raise serializers.ValidationError("Email không đúng định dạng.")
-        return value
+        return value.lower().strip()
 
     def validate_password(self, value):
         """Kiểm tra độ mạnh của mật khẩu."""
@@ -54,7 +50,8 @@ class AuthTokenSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(
         style={'input_type': 'password'},
-        trim_whitespace=False
+        trim_whitespace=False,
+        write_only=True
     )
 
     def validate(self, attrs):
