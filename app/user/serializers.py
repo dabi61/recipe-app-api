@@ -1,7 +1,3 @@
-"""
-Serializers for the user API view.
-"""
-
 from django.contrib.auth import (
     get_user_model,
     authenticate
@@ -10,36 +6,39 @@ from django.utils.translation import gettext as _
 
 from rest_framework import serializers
 
-# ModelSerializer cung cấp
-# Tự động tạo các field dựa trên model
-# Tự động tạo các validators
-# Tự động tạo các phương thức create và update mặc định
-# Các tính năng được kế thừa
-#   Validate tự động cho các trường
-#   Chuyển đổi giữa model instance và python primitives
-#   Xử lý các relationships
-#   Nested serialization
-
-# VD: auto validate field email (email = serializers.EmailFields())
-
 
 class UserSerializer(serializers.ModelSerializer):
-    """Serializer for the user object."""
+    """Serializer cho đối tượng người dùng."""
 
-    # Xử lý các relationships
     class Meta:
-        model = get_user_model()  # Tự động fields
-        # Tự động map với các model fields
+        model = get_user_model()
         fields = ['email', 'password', 'name']
-        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
+        extra_kwargs = {
+            'password': {'write_only': True, 'min_length': 6}
+        }
 
-    # override lại các phương thức
+    def validate_email(self, value):
+        """Kiểm tra email đã tồn tại hay chưa và đúng định dạng."""
+        if get_user_model().objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email này đã được sử dụng.")
+        if "@" not in value or "." not in value:
+            raise serializers.ValidationError("Email không đúng định dạng.")
+        return value
+
+    def validate_password(self, value):
+        """Kiểm tra độ mạnh của mật khẩu."""
+        if len(value) < 6:
+            raise serializers.ValidationError("Mật khẩu phải có ít nhất 6 ký tự.")
+        if value.isdigit():
+            raise serializers.ValidationError("Mật khẩu không được chỉ là số.")
+        return value
+
     def create(self, validated_data):
-        """Create and return a user with encrypted password."""
+        """Tạo và trả về user mới với mật khẩu được mã hóa."""
         return get_user_model().objects.create_user(**validated_data)
 
     def update(self, instance, validated_data):
-        """Update and return user."""
+        """Cập nhật và trả về người dùng."""
         password = validated_data.pop('password', None)
         user = super().update(instance, validated_data)
 
@@ -49,19 +48,9 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
-# Serializer là lớp cơ bản
-# Kiểm soát hoàn toàn quá trình serialization
-# Không ràng buộc với model
-# Phải tự định nhĩa các phương thứ chính
-# Các tính năng kế thừa
-#   Cơ chế validation cơ bản
-#   Convert data
-#   Error handling
-#   Context handling
-
 
 class AuthTokenSerializer(serializers.Serializer):
-    """Serializer for the user authentication object."""
+    """Serializer cho xác thực người dùng."""
     email = serializers.EmailField()
     password = serializers.CharField(
         style={'input_type': 'password'},
@@ -69,7 +58,7 @@ class AuthTokenSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs):
-        """Validate and authenticate the user."""
+        """Xác thực thông tin người dùng."""
         email = attrs.get('email')
         password = attrs.get('password')
 
@@ -80,8 +69,10 @@ class AuthTokenSerializer(serializers.Serializer):
         )
 
         if not user:
-            msg = _('Unable to authenticate with provided credentials.')
-            raise serializers.ValidationError(msg, code='authorization')
+            raise serializers.ValidationError(
+                {"detail": "Email hoặc mật khẩu không đúng."},
+                code='authorization'
+            )
 
         attrs['user'] = user
         return attrs
